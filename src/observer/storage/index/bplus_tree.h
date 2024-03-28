@@ -63,6 +63,7 @@ public:
   int operator()(const char *v1, const char *v2) const
   {
     switch (attr_type_) {
+      case DATES:
       case INTS: {
         return common::compare_int((void *)v1, (void *)v2);
       } break;
