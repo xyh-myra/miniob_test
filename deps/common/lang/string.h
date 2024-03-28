@@ -137,6 +137,8 @@ char *substr(const char *s, int n1, int n2);
 template <class T>
 std::string get_type_name(const T &val);
 
+int find_ch(const char *s, int n1, char ch);
+
 template <class T>
 bool str_to_val(const std::string &str, T &val, std::ios_base &(*radix)(std::ios_base &)/* = std::dec */)
 {
