@@ -157,6 +157,9 @@ const char *Value::data() const
     case CHARS: {
       return str_value_.c_str();
     } break;
+    case DATES: {
+      return intDate_to_strDate(num_value_.date_value_).c_str();
+    } break;
     default: {
       return (const char *)&num_value_;
     } break;
@@ -180,11 +183,7 @@ std::string Value::to_string() const
       os << str_value_;
     } break;
     case DATES: {
-      int y = num_value_.date_value_ / 10000;
-      int m = (num_value_.date_value_ - y * 10000) / 100;
-      int d = num_value_.date_value_ - y * 10000 - m * 100;
-      
-      os << std::to_string(y) << "-" << (m < 10 ? "0" : "") << std::to_string(m) << "-" << (d < 10 ? "0" : "") << std::to_string(d);
+      os<<intDate_to_strDate(num_value_.date_value_);
     } break;
     default: {
       LOG_WARN("unsupported attr type: %d", attr_type_);
@@ -211,9 +210,9 @@ int Value::compare(const Value &other) const
       } break;
       case BOOLEANS: {
         return common::compare_int((void *)&this->num_value_.bool_value_, (void *)&other.num_value_.bool_value_);
-      }
+      }break;
       case DATES: {
-        return common::compare_date((void *)&this->num_value_.date_value_, (void *)&other.num_value_.date_value_);
+        return common::compare_int((void *)&this->num_value_.date_value_, (void *)&other.num_value_.date_value_);
       } break;
       default: {
         LOG_WARN("unsupported type: %d", this->attr_type_);
