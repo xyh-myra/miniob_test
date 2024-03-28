@@ -8,21 +8,24 @@ EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
 MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
 See the Mulan PSL v2 for more details. */
 
-//
-// Created by WangYunlai on 2023/06/28.
-//
-
 #include "sql/parser/value.h"
 #include "common/lang/comparator.h"
 #include "common/lang/string.h"
 #include "common/log/log.h"
 #include <sstream>
 
-const char *ATTR_TYPE_NAME[] = {"undefined", "chars", "ints", "floats", "booleans"};
-
+const char *ATTR_TYPE_NAME[] = {"undefined", "chars", "ints", "floats", "booleans","dates"};
+bool check_date(int y, int m, int d)
+{
+    static int mon[] = {0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+    bool leap = (y%400==0 || (y%100 && y%4==0));
+    return y > 0
+        && (m > 0)&&(m <= 12)
+        && (d > 0)&&(d <= ((m==2 && leap)?1:0) + mon[m]);
+}
 const char *attr_type_to_string(AttrType type)
 {
-  if (type >= UNDEFINED && type <= FLOATS) {
+  if (type >= UNDEFINED && type <= DATES) {
     return ATTR_TYPE_NAME[type];
   }
   return "unknown";
@@ -45,6 +48,22 @@ Value::Value(bool val) { set_boolean(val); }
 
 Value::Value(const char *s, int len /*= 0*/) { set_string(s, len); }
 
+Value::Value(const char *date, int len,int flag) { 
+    int dv=0;
+    dv=value_init_date(date);
+    set_date(dv); }
+/*Value::Value(const char *y, const char* m,const char*d)
+{
+  int yy=atoi(y);
+  int mm=atoi(m);
+  int dd=atoi(d);
+  bool b = check_date(yy,mm,dd);
+  if(!b) 
+      std::cout<<"faliure!";
+  int dv=yy*10000+mm*100+dd;
+  set_date(dv);
+} */
+
 void Value::set_data(char *data, int length)
 {
   switch (attr_type_) {
@@ -62,6 +81,10 @@ void Value::set_data(char *data, int length)
     case BOOLEANS: {
       num_value_.bool_value_ = *(int *)data != 0;
       length_                = length;
+    } break;
+     case DATES: {
+      num_value_.date_value_ = *(int *)data;
+      length_                 = length;
     } break;
     default: {
       LOG_WARN("unknown data type: %d", attr_type_);
@@ -98,7 +121,12 @@ void Value::set_string(const char *s, int len /*= 0*/)
   }
   length_ = str_value_.length();
 }
-
+void Value::set_date(int val)
+{
+  attr_type_ = DATES;
+  num_value_.date_value_=val;
+  length_=sizeof(val);
+}
 void Value::set_value(const Value &value)
 {
   switch (value.attr_type_) {
@@ -114,6 +142,9 @@ void Value::set_value(const Value &value)
     case BOOLEANS: {
       set_boolean(value.get_boolean());
     } break;
+    case DATES: {
+      set_date(value.get_date());
+    } break;
     case UNDEFINED: {
       ASSERT(false, "got an invalid value type");
     } break;
@@ -126,6 +157,10 @@ const char *Value::data() const
     case CHARS: {
       return str_value_.c_str();
     } break;
+    case DATES:
+    {
+      return intDate_to_strDate(num_value_.date_value_).c_str();
+    }break;
     default: {
       return (const char *)&num_value_;
     } break;
@@ -147,6 +182,9 @@ std::string Value::to_string() const
     } break;
     case CHARS: {
       os << str_value_;
+    } break;
+    case DATES: {
+      os << intDate_to_strDate(num_value_.date_value_);
     } break;
     default: {
       LOG_WARN("unsupported attr type: %d", attr_type_);
@@ -174,6 +212,9 @@ int Value::compare(const Value &other) const
       case BOOLEANS: {
         return common::compare_int((void *)&this->num_value_.bool_value_, (void *)&other.num_value_.bool_value_);
       }
+      case DATES: {
+        return common::compare_date((void *)&this->num_value_.date_value_, (void *)&other.num_value_.date_value_);
+      } break;
       default: {
         LOG_WARN("unsupported type: %d", this->attr_type_);
       }
@@ -209,6 +250,9 @@ int Value::get_int() const
     case BOOLEANS: {
       return (int)(num_value_.bool_value_);
     }
+    case DATES: {
+      return (int)(num_value_.date_value_);
+    }
     default: {
       LOG_WARN("unknown data type. type=%d", attr_type_);
       return 0;
@@ -217,6 +261,19 @@ int Value::get_int() const
   return 0;
 }
 
+int Value::get_date() const
+{
+  switch (attr_type_) {
+    case DATES:{
+      return num_value_.date_value_;
+    }
+    default: {
+      LOG_WARN("unknown data type. type=%d", attr_type_);
+      return 0;
+    }
+}
+  return 0;
+}
 float Value::get_float() const
 {
   switch (attr_type_) {
@@ -237,6 +294,9 @@ float Value::get_float() const
     case BOOLEANS: {
       return float(num_value_.bool_value_);
     } break;
+    case DATES: {
+      return (float)(num_value_.date_value_);
+    }break;
     default: {
       LOG_WARN("unknown data type. type=%d", attr_type_);
       return 0;
@@ -285,3 +345,47 @@ bool Value::get_boolean() const
   }
   return false;
 }
+int value_init_date(const char* v) {
+    int y,m,d;
+    sscanf(v, "%d-%d-%d", &y, &m, &d);
+    bool b = check_date(y,m,d);
+    if(!b) 
+      return -1;
+    int dv = y*10000+m*100+d;
+    return dv;
+}
+std::string intDate_to_strDate(int int_date)
+{/*
+  int yy,mm,dd;
+  yy=int_date/10000;
+  mm=(int_date-yy*10000)/100;
+  dd=int_date-yy*10000-mm*100;
+  std::string stry,strm,strd;
+  stry=std::to_string(yy);
+  strm=std::to_string(mm);
+  strd=std::to_string(dd);
+  if(mm<10)
+    strm='0'+strm;
+  if(dd<10)
+    strd='0'+strd;
+  std::string strdate;
+  strdate=stry+'-'+strm+'-'+strd;
+  return strdate;*/
+  std::string ans = "YYYY-MM-DD";
+    std::string tmp = std::to_string(int_date);
+    int tmp_index = 7;
+    for(int i = 9 ; i >=0 ;i--)
+    {
+        if(i == 7|| i == 4)
+        {
+            ans[i] = '-';
+        }
+        else
+        {
+            ans[i] = tmp[tmp_index--];
+        }
+    }
+    return ans;
+  
+}
+
