@@ -147,6 +147,10 @@ public:
         }
         return str;
       }
+      case DATES:
+      {
+         std::to_string(*(int *)v);
+      }break;
       default: {
         ASSERT(false, "unknown attr type. %d", attr_type_);
       }

@@ -13,6 +13,9 @@ See the Mulan PSL v2 for more details. */
 #include "common/lang/string.h"
 #include "common/log/log.h"
 #include <sstream>
+#include <iostream>
+#include <stdio.h>
+#include<math.h>
 
 const char *ATTR_TYPE_NAME[] = {"undefined", "chars", "ints", "floats", "booleans","dates"};
 bool check_date(int y, int m, int d)
@@ -50,8 +53,13 @@ Value::Value(const char *s, int len /*= 0*/) { set_string(s, len); }
 
 Value::Value(const char *date, int len,int flag) { 
     int dv=0;
-    dv=value_init_date(date);
-    set_date(dv); }
+    dv=value_init_date(date,len);
+    if(dv==-1)
+    {
+      return;
+    }
+    else
+      set_date(dv); }
 /*Value::Value(const char *y, const char* m,const char*d)
 {
   int yy=atoi(y);
@@ -157,9 +165,9 @@ const char *Value::data() const
     case CHARS: {
       return str_value_.c_str();
     } break;
-    case DATES: {
+    /*case DATES: {
       return intDate_to_strDate(num_value_.date_value_).c_str();
-    } break;
+    } break;*/
     default: {
       return (const char *)&num_value_;
     } break;
@@ -183,7 +191,7 @@ std::string Value::to_string() const
       os << str_value_;
     } break;
     case DATES: {
-      os<<intDate_to_strDate(num_value_.date_value_);
+      os<< intDate_to_strDate(num_value_.date_value_);
     } break;
     default: {
       LOG_WARN("unsupported attr type: %d", attr_type_);
@@ -344,18 +352,38 @@ bool Value::get_boolean() const
   }
   return false;
 }
-int value_init_date(const char* v) {
-    int y,m,d;
-    sscanf(v, "%d-%d-%d", &y, &m, &d);
-    bool b = check_date(y,m,d);
-    if(!b) 
-      return -1;
-    int dv = y*10000+m*100+d;
+int value_init_date(const char* v, int len) {
+  if(len<8)
+     return -1;
+    int y=0,m=0, d=0;
+    int* tmp;
+    tmp = new int[len];
+    int index[2]={0};
+    int j=0;
+    for (int i = 0; i < len; i++)
+    {
+      if(v[i]!='-')
+          tmp[i] = v[i]-'0';
+      else {tmp[i]=0;index[j]=i;j++;}
+    }
+    y = 1000 * tmp[0] + 100 * tmp[1] + 10 * tmp[2] + tmp[3];
+    if(index[1]-index[0]>2)
+        m = 10 * tmp[index[0]+1] + tmp[index[1]-1];
+    else
+        m=tmp[index[0]+1];
+    if(len-index[1]>2)
+        d = 10 * tmp[index[1]+1] + tmp[index[1]+2];
+    else d=tmp[index[1]+1];
+
+    bool e = check_date(y, m, d);
+    if (!e)
+        return -1;
+    int dv = y * 10000 + m * 100 + d;
     return dv;
 }
 std::string intDate_to_strDate(int int_date)
-{/*
-  int yy,mm,dd;
+{
+  /*int yy,mm,dd;
   yy=int_date/10000;
   mm=(int_date-yy*10000)/100;
   dd=int_date-yy*10000-mm*100;
@@ -385,6 +413,7 @@ std::string intDate_to_strDate(int int_date)
         }
     }
     return ans;
+    
   
 }
 

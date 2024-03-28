@@ -98,5 +98,5 @@ private:
   std::string str_value_;
 };
 std::string intDate_to_strDate(int int_date);
-int value_init_date(const char* v);
+int value_init_date(const char* v,int len);
 bool check_date(int y, int m, int d);
