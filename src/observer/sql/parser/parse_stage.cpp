@@ -35,14 +35,23 @@ RC ParseStage::handle_request(SQLStageEvent *sql_event)
   const std::string &sql        = sql_event->sql();
 
   ParsedSqlResult parsed_sql_result;
-
+  try{
   parse(sql.c_str(), &parsed_sql_result);
+  }
+  catch(...)
+  {
+    // set error information to event
+    rc = RC::EMPTY;
+    sql_result->set_return_code(rc);
+    sql_result->set_state_string("");
+    return RC::SCHEMA_FIELD_TYPE_MISMATCH;
+  
+  }
   if (parsed_sql_result.sql_nodes().empty()) {
     sql_result->set_return_code(RC::SUCCESS);
     sql_result->set_state_string("");
     return RC::INTERNAL;
   }
-
   if (parsed_sql_result.sql_nodes().size() > 1) {
     LOG_WARN("got multi sql commands but only 1 will be handled");
   }
@@ -59,4 +68,7 @@ RC ParseStage::handle_request(SQLStageEvent *sql_event)
   sql_event->set_sql_node(std::move(sql_node));
 
   return RC::SUCCESS;
-}
+  
+  }
+
+

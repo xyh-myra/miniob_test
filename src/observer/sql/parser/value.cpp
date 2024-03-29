@@ -15,7 +15,7 @@ See the Mulan PSL v2 for more details. */
 #include <sstream>
 #include <iostream>
 #include <stdio.h>
-#include<math.h>
+#include <math.h>
 
 const char *ATTR_TYPE_NAME[] = {"undefined", "chars", "ints", "floats", "booleans","dates"};
 bool check_date(int y, int m, int d)
@@ -56,10 +56,14 @@ Value::Value(const char *date, int len,int flag) {
     dv=value_init_date(date,len);
     if(dv==-1)
     {
-      return;
+      set_boolean(0);
+      throw 
+      "wrong" ;
     }
     else
-      set_date(dv); }
+      {set_date(dv); 
+      }
+}
 /*Value::Value(const char *y, const char* m,const char*d)
 {
   int yy=atoi(y);
