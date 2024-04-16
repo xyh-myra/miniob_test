@@ -33,10 +33,23 @@ class Expression;
  * Rel -> Relation
  * Attr -> Attribute
  */
+enum AggrOp
+{
+    AGGR_NONE,    ///< no aggr
+    AGGR_SUM,    ///<sum
+    AGGR_AVG,
+    AGGR_MAX,
+    AGGR_MIN,
+    AGGR_COUNT,
+    AGGR_COUNT_ALL
+    
+};
 struct RelAttrSqlNode
 {
   std::string relation_name;   ///< relation name (may be NULL) 表名
   std::string attribute_name;  ///< attribute name              属性名
+  AggrOp      aggregation = AGGR_NONE; ///< aggregation(may be empty) 聚合操作
+  bool valid = true; ///<判断聚合是否合法
 };
 
 /**
@@ -103,7 +116,10 @@ struct CalcSqlNode
 
   ~CalcSqlNode();
 };
-
+struct FuncSqlNode{
+  std::vector<RelAttrSqlNode>     func_attributes;
+  AggrOp      aggregation = AGGR_NONE; ///< aggregation(may be empty) 聚合操作
+};
 /**
  * @brief 描述一个insert语句
  * @ingroup SQLParser

@@ -17,7 +17,7 @@ See the Mulan PSL v2 for more details. */
 #include <stdio.h>
 #include <math.h>
 
-const char *ATTR_TYPE_NAME[] = {"undefined", "chars", "ints", "floats", "booleans","dates"};
+const char *ATTR_TYPE_NAME[] = {"undefined", "chars", "ints", "floats", "booleans","DATES"};
 bool check_date(int y, int m, int d)
 {
     static int mon[] = {0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};

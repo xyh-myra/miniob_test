@@ -125,7 +125,9 @@ bool DefaultConditionFilter::filter(const Record &rec) const
   if (left_.is_attr) {  // value
     left_value.set_type(attr_type_);
     left_value.set_data(rec.data() + left_.attr_offset, left_.attr_length);
-  } else {
+    }
+   else 
+  {
     left_value.set_value(left_.value);
   }
 
