@@ -116,10 +116,6 @@ struct CalcSqlNode
 
   ~CalcSqlNode();
 };
-struct FuncSqlNode{
-  std::vector<RelAttrSqlNode>     func_attributes;
-  AggrOp      aggregation = AGGR_NONE; ///< aggregation(may be empty) 聚合操作
-};
 /**
  * @brief 描述一个insert语句
  * @ingroup SQLParser
@@ -147,7 +143,7 @@ struct DeleteSqlNode
  */
 struct UpdateSqlNode
 {
-  std::string                   relation_name;   ///< Relation to update
+  std::string                   relation_name;
   std::string                   attribute_name;  ///< 更新的字段，仅支持一个字段
   Value                         value;           ///< 更新的值，仅支持一个字段
   std::vector<ConditionSqlNode> conditions;

@@ -110,7 +110,7 @@ RC AggregatePhysicalOperator::next()
         if(aggregation == AggrOp::AGGR_COUNT ){
           result_cells[cell_idx].set_float((float)record_num);
         }
-         if(aggregation == AggrOp::AGGR_COUNT_ALL ){
+        if(aggregation == AggrOp::AGGR_COUNT_ALL ){
           result_cells[cell_idx].set_float((float)record_num);
         }
       }   

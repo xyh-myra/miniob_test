@@ -516,6 +516,7 @@ select_attr:
       RelAttrSqlNode attr;
       attr.relation_name  = "";
       attr.attribute_name = "*";
+      attr.aggregation = AggrOp::AGGR_NONE;
       $$->emplace_back(attr);
     }
     | rel_attr attr_list {
@@ -535,8 +536,7 @@ rel_attr_aggr:
       $$->relation_name = "";
       $$->attribute_name = "*";
   }
-  | 
-  ID {
+  | ID {
     $$ = new RelAttrSqlNode;
     $$->attribute_name = $1;
     free($1);
