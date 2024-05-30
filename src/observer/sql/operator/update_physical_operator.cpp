@@ -49,9 +49,7 @@ RC UpdatePhysicalOperator::next() {
     if(children_.empty()){
         return RC::RECORD_EOF;
     }
-
     PhysicalOperator *child=children_[0].get();
-
     //std::vector<Record> insert_records;
     while(RC::SUCCESS==(rc=child->next()))
     {
@@ -60,7 +58,6 @@ RC UpdatePhysicalOperator::next() {
       LOG_WARN("failed to get current record: %s", strrc(rc));
       return rc;
     }
-
   RowTuple *row_tuple=static_cast<RowTuple *>(tuple);
   Record &record = row_tuple->record();
 
@@ -76,35 +73,7 @@ RC UpdatePhysicalOperator::next() {
     //RC rc=RC::SUCCESS;
     if (rc != RC::SUCCESS) {
       LOG_WARN("failed to delete record: %s", strrc(rc));
-      return rc;
-    }
-    /*else{
-        const std::vector<FieldMeta> * table_field_metas =table_->table_meta().field_metas();
-        const char *target_field_name=field_.field_name();
-
-        int meta_num =table_field_metas->size();
-        int target_index=-1;
-        for(int i=0;i<meta_num;++i)
-        {
-            FieldMeta fieldmeta=(*table_field_metas)[i];
-            const char*field_name =fieldmeta.name();
-            if(0==strcmp(field_name,target_field_name)){
-                target_index=i;
-                break;
-            }
-        }
-        //重新构造record
-        std::vector<Value> values;
-        int cell_num=row_tuple->cell_num();
-        for(int i=0;i<cell_num;i++)
-        {
-        Record record;
-        RC     rc = table_->make_record((value_.size()), value_.data(), record);
-        rc = trx->insert_record(table_, record);
-        }
-    }*/
-
-    }
+      return rc; } }
     return RC::RECORD_EOF;
  }
 

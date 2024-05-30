@@ -105,6 +105,11 @@ struct SelectSqlNode
   std::vector<std::string>      relations;   ///< 查询的表
   std::vector<ConditionSqlNode> conditions;  ///< 查询条件，使用AND串联起来多个条件
 };
+struct JoinSqlNode
+{
+ std::vector<std::string> relations;
+ std::vector<ConditionSqlNode> conditions;
+};
 
 /**
  * @brief 算术表达式计算的语法树
@@ -274,7 +279,7 @@ enum SqlCommandFlag
   SCF_CALC,
   SCF_SELECT,
   SCF_INSERT,
-  SCF_UPDATE,
+  SCF_UPDATE,//UPDATE
   SCF_DELETE,
   SCF_CREATE_TABLE,
   SCF_DROP_TABLE,
@@ -315,6 +320,7 @@ public:
   LoadDataSqlNode     load_data;
   ExplainSqlNode      explain;
   SetVariableSqlNode  set_variable;
+  JoinSqlNode         innerjoin;
 
 public:
   ParsedSqlNode();
